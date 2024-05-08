@@ -1,6 +1,6 @@
 <template>
     <v-container style="text-align: center; margin-top: 10px;">
-      <v-row>
+      <v-row style="justify-content: center;">
         <!-- Champs pour les lignes et colonnes -->
         <v-col cols="2">
           <v-text-field
@@ -25,8 +25,15 @@
       </v-row>
   
       <!-- Boutons d'action -->
-      <v-row v-if="showAction">
-
+      <v-row v-if="showAction" style="justify-content: center;">
+          <v-btn
+            color="success"
+            style="width: 100px; margin: 10px;"
+            @click="stepPrev"
+            v-if="step>0"
+          >
+            prev
+          </v-btn>
           <v-btn
             color="info"
             style="width: 150px; margin: 10px;"
@@ -55,7 +62,7 @@
   
       <v-btn
         color="error"
-        style="width: 150px; position: fixed; right: 64px; top: 164px;"
+        style="width: 150px; position: fixed; right: 64px; top: 90px;"
         @click="Marquage"
       >
         Actualiser
@@ -64,12 +71,13 @@
   </template>
   
   <script setup>
-  import { ref,watch,onMounted  } from 'vue';
+  import { ref,watch,onMounted , computed } from 'vue';
   
   const ligne = ref(4);
   const colone = ref(6);
 
   const step = ref(0);
+  const stepPrevious = computed(()=>step.value - 1);
 
   const showMinico = ref(true);
   const showMinili = ref(true);
@@ -81,6 +89,7 @@
     'input:col-count-changed', 
     'input:row-count-changed',
     'click:one-step',
+    'click:mark-step'
   ]);
   const props = defineProps({
     isActions: Boolean,
@@ -114,6 +123,12 @@
     showMinili.value = false;
     emit('click:one-step', 'maxdiff', step.value++);
   };
+
+  const stepPrev = () => {
+    const type = showMinili.value?'minili':(showMinico.value?'minico':'maxdiff');
+    --step.value;
+    emit('click:one-step', type, stepPrevious.value);
+  }
   
   const Marquage = () => {
     // Code pour Actualiser

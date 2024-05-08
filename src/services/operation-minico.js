@@ -1,59 +1,9 @@
-import { cloneArray } from '@/utils/clone-array'
+import { calculZ } from '@/utils/array-sum-calcul-z'
+import { Operation } from './operation';
 
-export default class {
+export default class extends Operation{
   constructor(mat, tabLign, tabCol) {
-    this.rows = tabLign.length;
-    this.cols = tabCol.length;
-    this.mat = cloneArray(mat) || [];
-    this.tabLign = cloneArray(tabLign) || [];
-    this.tabCol = cloneArray(tabCol) || [];
-    this.colTemp = [];
-    this.matP = [];
-    this.finished = false;
-    this.initArrays();
-  }
-
-  // Function to initialize matP with default values
-  initMatP() {
-    this.matP = Array.from({ length: this.rows }, () =>
-      Array.from({ length: this.cols }, () => '')
-    );
-  }
-
-  // Function to initialize colTemp with empty arrays for each row
-  initColTemp() {
-    this.colTemp = Array.from({ length: this.rows }, () => []);
-  }
-
-  // Function to initialize other arrays (like tabLign and tabCol)
-  initArrays() {
-    this.initMatP();   // Initialize matP
-    this.initColTemp(); // Initialize colTemp
-  }
-
-  // Helper function to check if index is in colTemp
-  isIndexInColTemp(row, index) {
-    return this.colTemp[row].includes(index);
-  }
-
-  // Function to mark a whole row as invalid
-  barrerLigne(row) {
-    for (let col = 0; col < this.cols; col++) {
-      this.mat[row][col] = 10000000000; // Mark as invalid
-      if (!this.isIndexInColTemp(row, col)) {
-        this.matP[row][col] = '-'; // Indicate invalid position in matP
-      }
-    }
-  }
-
-  // Function to mark a whole column as invalid
-  barrerColonne(colIndex) {
-    for (let row = 0; row < this.rows; row++) {
-      this.mat[row][colIndex] = 10000000000; // Mark as invalid
-      if (!this.isIndexInColTemp(row, colIndex)) {
-        this.matP[row][colIndex] = '-'; // Indicate invalid position in matP
-      }
-    }
+    super(mat,tabLign,tabCol)
   }
 
   opererColonne(column) {
@@ -107,6 +57,9 @@ export default class {
   process(column){
     for (let index = 0; index <= column; index++) {
       this.opererColonne(index);
+    }
+    if(this.finished){
+        this.Z = calculZ(this.matrice,this.matP,this.colTemp);
     }
   }
 }

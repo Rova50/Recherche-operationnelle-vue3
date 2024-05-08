@@ -5,9 +5,7 @@
   import TableConfigView from './views/table-config.vue';
   import useMatrixInit from './composables/useMatrixInit';
   import TableDialogView from './views/exemple-table-dialog.vue';
-  import Minili from '@/services/minili-operation.js';
-  import Minico from '@/services/minico-operation.js';
-  import MaxDiff from '@/services/diffmax-operation.js';
+  import {OperationFactory} from '@/services/operation-factory'
 
   const showAction = ref(false);
 
@@ -18,39 +16,24 @@
   const tablesTreated = ref([[]]) 
   const tableLineTreated = ref([]);
   const tableColumnTreated = ref([]);
-
   const tableTreatedDiff = ref([]);
+
+  const calculZ=ref(0);
 
   const handleSave = (tables, table_rows, tables_column) => {
     showAction.value = true;
   }
 
   const handleClick = (type, count) => {
-    if(type=='minili'){
-      const matrixOps = new Minili(tables.value, tableLine.value, tableColumn.value);
-      matrixOps.process(count);
-      tablesTreated.value = matrixOps.matP;
-      tableColumnTreated.value = matrixOps.tabCol;
-      tableLineTreated.value = matrixOps.tabLign;
-      showAction.value = !matrixOps.finished;
-    }
-    if(type=="minico"){
-      const matrixOps = new Minico(tables.value, tableLine.value, tableColumn.value);
-      matrixOps.process(count);
-      tablesTreated.value = matrixOps.matP;
-      tableColumnTreated.value = matrixOps.tabCol;
-      tableLineTreated.value = matrixOps.tabLign;
-      showAction.value = !matrixOps.finished;
-    }
-    if(type=="maxdiff"){
-      const matrixOps = new MaxDiff(tables.value, tableLine.value, tableColumn.value);
-      matrixOps.process(count);
-      tableTreatedDiff.value = matrixOps.matDiff;
-      tablesTreated.value = matrixOps.matP;
-      tableColumnTreated.value = matrixOps.tabCol;
-      tableLineTreated.value = matrixOps.tabLign;
-      showAction.value = !matrixOps.finished;
-    }
+    const factory = new OperationFactory(tables.value, tableLine.value, tableColumn.value,type);
+    const matrixOps = factory.getOperation();
+    matrixOps.process(count);
+    (type!='diffmax')?1:tableTreatedDiff.value = matrixOps.matDiff;
+    tablesTreated.value = matrixOps.matP;
+    tableColumnTreated.value = matrixOps.tabCol;
+    tableLineTreated.value = matrixOps.tabLign;
+    showAction.value = !matrixOps.finished;
+    calculZ.value = matrixOps.Z;
   }
 
 
@@ -70,9 +53,6 @@
 </script>
 
 <template>
-  <header>
-    <h1>✨ RECHERCHE OPERATIONNELLE ✨</h1>
-  </header>
 
   <header-view/>
   <div style="padding:10px;">
@@ -102,7 +82,7 @@
           @save="handleSave"
         />
       </div>
-      <div v-if="tableTreatedDiff.length>2" id="content0" class="" style="display:inline-block; margin-left:50px;">
+      <div v-if="tableTreatedDiff.length>2 && showAction" id="content0" class="" style="display:inline-block; margin-left:50px;">
         <table-view 
           :tables="tableTreatedDiff" 
           :tableColumn="tableColumnTreated" 
@@ -120,7 +100,8 @@
       </div>
     </div>
 
-    <div id="Z" style="text-align:center;">
+    <div id="Z" v-if="calculZ" style="text-align:center; border:1px dashed red">
+      {{ `Z = ${calculZ}` }}
     </div>
     <div style="display:block;">
       <div id="GRP" style="display:inline-block"></div>
