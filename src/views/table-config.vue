@@ -61,9 +61,10 @@
       </v-row>
   
       <v-btn
+        v-if="!showAction && step>0"
         color="error"
         style="width: 150px; position: fixed; right: 64px; top: 90px;"
-        @click="Marquage"
+        @click="$emit('click:actualised',step)"
       >
         Actualiser
       </v-btn>
@@ -89,7 +90,8 @@
     'input:col-count-changed', 
     'input:row-count-changed',
     'click:one-step',
-    'click:mark-step'
+    'click:mark-step',
+    'click:actualised',
   ]);
   const props = defineProps({
     isActions: Boolean,
@@ -129,10 +131,6 @@
     --step.value;
     emit('click:one-step', type, stepPrevious.value);
   }
-  
-  const Marquage = () => {
-    // Code pour Actualiser
-  };
   
   </script>
   

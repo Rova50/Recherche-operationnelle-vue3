@@ -9,7 +9,7 @@ export default class extends Operation {
   opererLi(row) {
     // Ensure proper initialization before operation
     if (row >= this.rows) {
-      this.finished = true;
+      this.finishedBase = true;
       return;
     }
     let keepLooping = true;
@@ -63,7 +63,7 @@ export default class extends Operation {
     for (let index = 0; index <= row; index++) {
       this.opererLi(index);
     }
-    if(this.finished){
+    if(this.finishedBase){
         this.Z = calculZ(this.matrice,this.matP,this.colTemp);
     }
   }

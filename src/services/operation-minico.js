@@ -9,7 +9,7 @@ export default class extends Operation{
   opererColonne(column) {
     
     if (column >= this.cols) {
-      this.finished = true;
+      this.finishedBase = true;
       return;
     }
     let rowIndex = 0;
@@ -58,7 +58,7 @@ export default class extends Operation{
     for (let index = 0; index <= column; index++) {
       this.opererColonne(index);
     }
-    if(this.finished){
+    if(this.finishedBase){
         this.Z = calculZ(this.matrice,this.matP,this.colTemp);
     }
   }

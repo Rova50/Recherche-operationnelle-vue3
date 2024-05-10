@@ -37,7 +37,13 @@
                 <td v-for="c in cols" :key="'cell-' + r + '-' + c">
                   <input
                     :type="inputType"
-                    style="width: 45px; text-align: center; background-color: white; color: black; border: 1px solid grey;"
+                    :style="{
+                      width: '45px', 
+                      textAlign: 'center', 
+                      backgroundColor: tableToColor && tableToColor[r-1] && tableToColor[r-1].includes(c-1) ? 'yellow' : 'white', 
+                      color: 'black', 
+                      border: '1px solid grey'
+                    }"
                     :class="'input-' + r + '-' + c"
                     v-model="tables[r-1][c-1]"
                   />
@@ -94,6 +100,7 @@ const props = defineProps({
   tables: Array,
   tableLine:Array,
   tableColumn:Array,
+  tableToColor:Array,
   action: "yes"|"no",
   inputType: "number"|"text"
 })

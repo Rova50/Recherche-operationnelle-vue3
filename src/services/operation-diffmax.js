@@ -99,7 +99,7 @@ export default class MaxDiff extends Operation {
       }
     }
 
-    this.finished = this.tabCol.every((value) => value == 0) 
+    this.finishedBase = this.tabCol.every((value) => value == 0) 
             && this.tabLign.every((value) => value == 0);
   }
 
@@ -126,7 +126,7 @@ export default class MaxDiff extends Operation {
       this.opererDI(index);
     }
 
-    if (this.finished) {
+    if (this.finishedBase) {
       this.Z = calculZ(this.matrice, this.matP, this.colTemp);
     }
   }

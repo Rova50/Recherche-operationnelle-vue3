@@ -5,6 +5,8 @@
   import TableConfigView from './views/table-config.vue';
   import useMatrixInit from './composables/useMatrixInit';
   import TableDialogView from './views/exemple-table-dialog.vue';
+  import SvgView from './views/svg-show.vue';
+  import TableStepView from './views/table-step.vue';
   import {OperationFactory} from '@/services/operation-factory'
 
   const showAction = ref(false);
@@ -19,6 +21,11 @@
   const tableTreatedDiff = ref([]);
 
   const calculZ=ref(0);
+  const colTemp=ref([]);
+  const vx=ref([]);
+  const vy=ref([]);
+
+  const nbClickOperation = ref([]);
 
   const handleSave = (tables, table_rows, tables_column) => {
     showAction.value = true;
@@ -32,8 +39,27 @@
     tablesTreated.value = matrixOps.matP;
     tableColumnTreated.value = matrixOps.tabCol;
     tableLineTreated.value = matrixOps.tabLign;
-    showAction.value = !matrixOps.finished;
+    showAction.value = !matrixOps.finishedBase;
+    colTemp.value = matrixOps.colTemp;
     calculZ.value = matrixOps.Z;
+    nbClickOperation.value = [type,count];
+    if(matrixOps.finishedBase) {
+      matrixOps.maxMatP();
+      vx.value = matrixOps.Vx;
+      vy.value = matrixOps.Vy;
+    }
+  }
+
+  const handleRefresh = (count) => {
+    const factory = new OperationFactory(tables.value, tableLine.value, tableColumn.value,nbClickOperation.value[0]);
+    const matrixOps = factory.getOperation();
+    matrixOps.process(nbClickOperation.value[1]);
+    matrixOps.maxMatP();
+    colTemp.value = matrixOps.colTemp;
+    vx.value = matrixOps.Vx;
+    vy.value = matrixOps.Vy;
+    const nbClickRefresh = count - nbClickOperation.value[1];
+    matrixOps.processMark(0);
   }
 
 
@@ -61,6 +87,7 @@
       @input:col-count-changed="(n) => tableCol = parseInt(n)" 
       @input:row-count-changed="(n) => tableRow = parseInt(n)"
       @click:one-step="handleClick"
+      @click:actualised="handleRefresh"
     />
     <table-dialog-view 
       :dialog="openDialog"
@@ -78,6 +105,7 @@
           :tableLine="tableLine" 
           :action="'yes'"
           :inputType="'number'"
+          :tableToColor="colTemp"
           @default-data-option="openDialog=true"
           @save="handleSave"
         />
@@ -104,15 +132,27 @@
       {{ `Z = ${calculZ}` }}
     </div>
     <div style="display:block;">
-      <div id="GRP" style="display:inline-block"></div>
-      <div id="step" style="display:inline-block; position:absolute; margin-left:50px;"></div>
+      <div id="GRP" style="display:inline-block">
+        <svg-view
+          :Vx="vx"
+          :Vy="vy"
+          :colTemp="colTemp"
+          :matrice="tables"
+         />
+      </div>
+      <div id="step" style="display:inline-block; position:absolute; margin-left:50px;">
+        <table-step-view
+          :Vx="vx"
+          :Vy="vy"
+          :colTemp="colTemp"
+          :matrice="tables"
+          :matP="tablesTreated"
+        />
+      </div>
     </div>
   </div>
 
 </template>
 
 <style scoped>
-  h1 {
-    text-align: center;
-  }
 </style>

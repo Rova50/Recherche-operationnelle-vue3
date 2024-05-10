@@ -3,8 +3,9 @@
   </template>
   
   <script setup>
-  import { computed } from 'vue';
-  
+  import { computed,ref } from 'vue';
+  import { convertRange } from '@/utils/number-to-letter-range';
+
   // Retrieve props
   const props = defineProps({
     colTemp: {
@@ -24,9 +25,13 @@
       required: true,
     },
   });
+
+  
+  const lettre = ref([]);
   
   // Computed property to generate the SVG content using the props
   const svgContent = computed(() => {
+    lettre.value = convertRange(props.matrice.length);
     let svg = `<svg height="400" width="400" style="border: 1px solid black">
       <marker id="fleche" markerHeight="10" refX="0" refY="3" orient="auto">
         <path d="M0,0 L0,6 L9,3 z" fill="red"></path>
@@ -49,8 +54,10 @@
     for (let i = 0; i < props.matrice.length; i++) {
       const h = htr1 + 5;
       svg += `<circle cx="50" cy="${htr1}" r="20" stroke="green" stroke-width="1" fill="yellow" />
-              <text x="45" y="${h}">${String.fromCharCode(65 + i)}</text>
-              <text x="5" y="${h}">${props.Vx[i]}</text>`;
+              <text x="45" y="${h}">${lettre.value[i]}</text>
+              <text x="5" y="${h}">
+                ${typeof props.Vx[i]=='undefined' ?'':props.Vx[i]}
+              </text>`;
       htr1 += 60;
     }
   
@@ -59,7 +66,9 @@
       const h = htr2 + 5;
       svg += `<circle cx="300" cy="${htr2}" r="20" stroke="green" stroke-width="1" fill="yellow" />
               <text x="295" y="${h}">${i + 1}</text>
-              <text x="335" y="${h}">${props.Vy[i]}</text>`;
+              <text x="335" y="${h}">
+                ${typeof props.Vy[i]=='undefined' ?'':props.Vy[i]}
+              </text>`;
       htr2 += 60;
     }
   

@@ -3,7 +3,8 @@
 </template>
   
 <script setup>
-  import { computed } from 'vue';
+  import { computed,ref } from 'vue';
+  import { convertRange } from '@/utils/number-to-letter-range';
   
   // Define props to accept data into the component
   const props = defineProps({
@@ -23,11 +24,9 @@
       type: Array,
       required: true,
     },
-    lettre: {
-      type: Array,
-      required: true,
-    },
   });
+
+  const lettre = ref([]);
   
   // Helper function to calculate the number of rows in the table
   const nbLinTabStep = () => {
@@ -43,6 +42,7 @@
     const nbl = nbLinTabStep();
     const step = [];
     const negStep = [];
+    lettre.value = convertRange(props.matrice.length);
   
     for (let i = 0; i < props.matP.length; i++) {
       for (let j = 0; j < props.matP[i].length; j++) {
@@ -52,7 +52,7 @@
           const y = props.Vy[j];
           const sigma = x + m - y;
   
-          const stepText = `σ(${props.lettre[i]}, ${j}) = ${x} + ${m} - ${y} = ${sigma}`;
+          const stepText = `σ(${lettre.value[i]}, ${j+1}) = ${x} + ${m} - ${y} = ${sigma}`;
           step.push(stepText);
   
           if (sigma < 0) {
