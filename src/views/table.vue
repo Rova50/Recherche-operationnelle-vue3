@@ -3,6 +3,7 @@
     <div>
       <v-row v-if="action=='yes'">
           <v-btn
+            small
             color="secondary"
             style="width: 150px;margin: 15px;"
             @click="$emit('default-data-option')"
@@ -11,6 +12,7 @@
             Default Data
           </v-btn>
           <v-btn
+            small
             color="success"
             style="width: 150px; margin: 15px;"
             @click="handleSave"
@@ -40,7 +42,8 @@
                     :style="{
                       width: '45px', 
                       textAlign: 'center', 
-                      backgroundColor: tableToColor && tableToColor[r-1] && tableToColor[r-1].includes(c-1) ? 'yellow' : 'white', 
+                      backgroundColor: tableToColor && tableToColor[r-1] && tableToColor[r-1].includes(c-1) 
+                      ? (typeof color==='undefined'?'yellow':color) : 'white', 
                       color: 'black', 
                       border: '1px solid grey'
                     }"
@@ -102,7 +105,8 @@ const props = defineProps({
   tableColumn:Array,
   tableToColor:Array,
   action: "yes"|"no",
-  inputType: "number"|"text"
+  inputType: "number"|"text",
+  color: String,
 })
 
 const emit = defineEmits(['default-data-option','save']);

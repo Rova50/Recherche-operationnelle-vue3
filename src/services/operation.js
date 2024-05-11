@@ -1,4 +1,5 @@
 import { cloneArray } from '@/utils/clone-array';
+import { calculZ } from '@/utils/array-sum-calcul-z';
 
 export class Operation {
   constructor(mat, tabLign, tabCol) {
@@ -10,20 +11,30 @@ export class Operation {
     this.tabCol = cloneArray(tabCol) || [];
     this.colTemp = [];
     this.matP = [];
+    this.matPCopied = [];
+
     this.matDiff = cloneArray(mat) || [];
     this.finishedBase = false;
     this.finishedSteppingStone = false;
     this.Z = 0;
-    this.initArrays();
     // stepping stone
     this.Vx = [];
     this.Vy = [];
     this.firstTimeInMarquage = true;
+    //color
+    this.toColor=[];
+    //won
+    this.gains=[];
+    this.minus = 0;
+
+    // initialisation
+    this.initArrays();
   }
 
   initArrays() {
     this.initMatP();
     this.initColTemp();
+    this.initToColor();
   }
 
   initMatP() {
@@ -34,6 +45,10 @@ export class Operation {
 
   initColTemp() {
     this.colTemp = Array.from({ length: this.rows }, () => []);
+  }
+
+  initToColor() {
+    this.toColor = Array.from({ length: this.rows }, () => []);
   }
 
   isIndexInColTemp(row, colIndex) {
@@ -144,14 +159,22 @@ export class Operation {
   }
 
   finishMarquage = (row, col, nb) => {
-      if (row != null)
+    let finished=false;  
+    if (row != null)
           for (let index = 0; index < row.length; index++) {
               this.traitX(row[index]).forEach((element) => {
                   if (element == col && nb != 0)
-                      return true;
+                      finished= true;
               })
           }
-      return false;
+      return finished;
+  }
+
+  fillToColor = (row, col) => {
+    if(typeof this.toColor[row] === 'undefined'){
+      this.toColor[row]=[];
+    }
+    this.toColor[row].push(col);
   }
 
   boucle = (obj, ok) => {
@@ -161,8 +184,9 @@ export class Operation {
         if (obj.method == 'X') {
             prefixe = '-'
         }
-        this.matP[(l.id + 1)][(l.jd + 1)] = prefixe + this.matP[(l.id + 1)][(l.jd + 1)].children[0].value;
-        boucle(getCell(l.parent, l.cd, ok), ok)
+        this.matP[obj.id][obj.jd] = prefixe + this.matP[(obj.id)][(obj.jd)];
+        this.fillToColor(obj.id,obj.jd);
+        this.boucle(this.getCell(obj.parent, obj.cd, ok), ok)
     }
   }
 
@@ -194,6 +218,7 @@ export class Operation {
     tb.push(ans);
     ok.push(ans);
     let current = new Array();
+    this.initToColor();
 
     while (!this.finishMarquage(current, j, nb)) {
         current = [];
@@ -247,59 +272,150 @@ export class Operation {
     }
 
     this.boucle(ob, ok)
-    this.matP[(i + 1)][(j + 1)] = '+';
+    this.matP[i][j] = '+';
+    this.fillToColor(i,j);
+    
 
-    if (this.firstTimeInMarquage) {
-      this.firstTimeInMarquage = false;
-        this.matP[(i + 1)][(j + 1)] = '+';
-    }
+    // if (this.firstTimeInMarquage) {
+    //   this.firstTimeInMarquage = false;
+    //     this.matP[(i)][(j)] = '+';
+    // }
   }
 
   infoRowNegative = () => {
     const negInfo = [];
-    for (let i = 0; i < this.matP.length; i++) {
-      for (let j = 0; j < this.matP[i].length; j++) {
-        if (this.matP[i][j] === '-') {
+    for (let i = 0; i < this.matPCopied.length; i++) {
+      for (let j = 0; j < this.matPCopied[i].length; j++) {
+        if (this.matPCopied[i][j] === '-') {
           const x = this.Vx[i];
           const m = parseInt(this.matrice[i][j], 10);
           const y = this.Vy[j];
           const sigma = x + m - y;
           if (sigma < 0) {
-            negInfo.push([i,j]);
+            negInfo.push([i,j,sigma]);
           }
         }
       }
     }
+    this.gains = this.gains.length!==negInfo.length 
+                  ? Array.from({ length: negInfo.length}, () => [])
+                  :this.gains;
     return negInfo;
   }
 
-  processMark = (click) => {
+  processMark = (click_count) => {
+    const click = click_count - this.minus;
     let data = new Array();
     const negInfo = this.infoRowNegative();
     const len = negInfo.length;
-    if (len == 0) {
+
+    if(len===0){
       this.finishedSteppingStone = true;
-    } else if (click < len) {
-        this.nettoieTable();
-        data = negInfo[click];
-        this.marqueTab(parseInt(data[0]), parseInt(data[1]));
-        //this.calculGain(click);
-    } else if (len == click) {
-        // nettoieTable();
-        // data = negInfo[this.getMaxGain()];
-        // MarqueTab(parseInt(data[0]), parseInt(data[1]));
-        // actualiserTable();
-    } else if ((len + 1) == click) {
-        // initialiser();
-        // ColTemp2();
-        // calculZ(matrice);
-        // maxMatP();
-        // dinamCercle();
-        // afficheStep();
-    } else {
-        click = -1;
+      return;
     }
-    click++;
+
+    for (let index = 0; index <= click; index++) {
+      if(index<len){
+        this.matP = cloneArray(this.matPCopied);
+        this.nettoieTable();
+        data = negInfo[index];
+        this.marqueTab(parseInt(data[0]), parseInt(data[1]));
+        this.calculGain(index);
+      }
+    }
+
+    if (len <= click) {
+      this.matP = cloneArray(this.matPCopied);
+      this.nettoieTable();
+      data = negInfo[this.getMaxGain()];
+      this.marqueTab(parseInt(data[0]), parseInt(data[1]));
+      this.actualiserTable();
+      this.initToColor();
+      this.Z = calculZ(this.matrice,this.matP,this.colTemp);
+      this.maxMatP();
+      this.minus += click+1;
+      this.gains = [];
+    }
+  }
+
+  getNegatif = () => {
+    const rep = [];
+    this.matP.forEach((row)=> row.forEach(
+      (col)=>{
+      col.toString().includes('-')?rep.push(parseInt(col.toString().substr(1))):'';
+    }))
+    let min = Number.MAX_VALUE;
+    for (let index = 0; index < rep.length; index++) {
+        if (rep[index] < min) {
+            min = rep[index];
+        }
+    }
+    return min;
+  }
+
+  calculGain = (i) => {
+    const neg = this.getNegatif();
+    const negInfo = this.infoRowNegative();
+    const  gain = [neg,negInfo[i][2]];
+    this.gains[i] = gain;
+  }
+
+  getMaxGain = () => {
+    const gainList = this.gains.map((gain)=> {
+      return (-1*gain[0])*gain[1];
+    });
+    let max = 0;
+    let i = 0;
+    for (let index = 0; index < gainList.length; index++) {
+        const element = gainList[index];
+        if (max < element) {
+            max = element;
+            i = index;
+        }
+    }
+    return i;
+  }
+
+  actualiserTable = () => {
+    let neg = this.getNegatif();
+    for (let index = 0; index < this.matP.length; index++) {
+      for (let i = 0; i < this.matP[index].length; i++) {
+        if (this.matP[index][i].toString().indexOf("-") != -1) {
+            this.matP[index][i] = 
+            ((parseInt(this.matP[index][i].toString().substr(1)) - neg) == 0) 
+            ? '' 
+            : (parseInt(this.matP[index][i].toString().substr(1)) - neg);
+
+        } 
+        else if (this.matP[index][i] == '+') 
+        {
+          this.matP[index][i] = neg;
+        } else if (this.matP[index][i].toString().indexOf("+") != -1) 
+        {
+          this.matP[index][i] = parseInt(this.matP[index][i].toString().substr(1)) + neg;
+        }
+      }
+    }
+
+    this.matP = this.matP.map(row => row.map((column)=>{
+      return (column==='')?'-':column;
+    }));
+
+    this.matPCopied = cloneArray(this.matP);
+    this.matPtoColTemp();
+  }
+
+  matPtoColTemp = () => {
+    this.initColTemp();
+    this.matP.forEach(
+      (row,row_index) => row.forEach(
+        (column,col_index)=>{
+          if (column!=='-') {
+            this.colTemp[row_index].push(col_index);
+          }
+        }
+      )
+    )
   }
 
 }

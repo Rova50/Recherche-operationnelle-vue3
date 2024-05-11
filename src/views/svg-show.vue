@@ -1,5 +1,9 @@
-<template>
-    <div v-html="svgContent"></div> <!-- Render SVG content -->
+  <template>
+    <v-card>
+      <v-card-text>
+        <div v-html="svgContent"></div> <!-- Render SVG content -->
+      </v-card-text>
+    </v-card>
   </template>
   
   <script setup>
@@ -32,7 +36,7 @@
   // Computed property to generate the SVG content using the props
   const svgContent = computed(() => {
     lettre.value = convertRange(props.matrice.length);
-    let svg = `<svg height="400" width="400" style="border: 1px solid black">
+    let svg = `<svg height="400" width="400">
       <marker id="fleche" markerHeight="10" refX="0" refY="3" orient="auto">
         <path d="M0,0 L0,6 L9,3 z" fill="red"></path>
       </marker>`;

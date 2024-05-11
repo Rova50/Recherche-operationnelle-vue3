@@ -4,7 +4,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 // import LocalStorageProductsService from './services/local-storage-products-service';
 
-// import '@mdi/font/css/materialdesignicons.css'
+import '@mdi/font/css/materialdesignicons.css'
 
 import 'vuetify/styles'
 import { createVuetify } from 'vuetify'

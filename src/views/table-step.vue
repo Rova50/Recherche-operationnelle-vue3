@@ -1,5 +1,12 @@
 <template>
-    <div v-html="tableContent"></div> <!-- Render the table content -->
+  <v-card class="fill-available-blank" v-if="nbLinTabStep()>0">
+    <v-card-title class="headline">
+      Algorithme de Stepping Stone
+    </v-card-title>
+    <v-card-text>
+      <div v-html="tableContent"></div> 
+    </v-card-text>
+  </v-card>
 </template>
   
 <script setup>
@@ -62,7 +69,7 @@
       }
     }
   
-    let tb = '<h3>Algorithme de Stepping Stone</h3><table>';
+    let tb = '<table>';
     let k = 0;
     for (let i = 0; i < nbl; i++) {
       tb += '<tr>';
@@ -87,3 +94,6 @@
     return tb;
   });
 </script>
+
+<style scoped>
+</style>

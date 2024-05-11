@@ -1,3 +1,105 @@
+<style scoped>
+</style>
+
+<template>
+  <v-app>
+  <header-view/>
+  <v-content style="margin-top: 50px;">
+    <table-config-view 
+      :isActions="showAction"
+      @input:col-count-changed="(n) => tableCol = parseInt(n)" 
+      @input:row-count-changed="(n) => tableRow = parseInt(n)"
+      @click:one-step="handleClick"
+      @click:actualised="handleRefresh"
+    />
+    <table-dialog-view 
+      :dialog="openDialog"
+      @exemple-chosen="(item)=>{
+        tables=item.DT;
+        tableLine=item.DTL;
+        tableColumn=item.DTC;
+      }"
+    />
+    <v-container>
+      <v-card>
+        <v-card-text>
+          <div class="row" style="display:block">
+            <div class="" style="display:inline-block">
+              <table-view 
+                :tables="tables" 
+                :tableColumn="tableColumn" 
+                :tableLine="tableLine" 
+                :action="'yes'"
+                :inputType="'number'"
+                :tableToColor="colToColored"
+                @default-data-option="openDialog=true"
+                @save="handleSave"
+              />
+            </div>
+            <div 
+              v-if="tableTreatedDiff.length>2 && showAction" 
+              style="display:inline-block;"
+            >
+              <table-view 
+                :tables="tableTreatedDiff" 
+                :tableColumn="tableColumnTreated" 
+                :tableLine="tableLineTreated" 
+                :action="'no'"
+              />
+            </div>	    	
+            <div class="" style="display:inline-block;">
+              <table-view 
+                :tables="tablesTreated" 
+                :tableColumn="tableColumnTreated" 
+                :tableLine="tableLineTreated" 
+                :action="'no'"
+                :tableToColor="colToColoredStepping"
+                :color="'grey'"
+              />	
+            </div>
+          </div>
+        </v-card-text>
+      </v-card>
+    </v-container>
+    <v-container v-if="calculZ">
+      <v-card >
+        <v-card-text>
+          <div  style="text-align:center;">
+            {{ `Z = ${calculZ}` }}
+          </div>
+        </v-card-text>
+      </v-card>
+    </v-container>
+    <v-container style="display:flex; gap:20px;">
+      <div id="GRP" style="display:inline-block">
+        <svg-view
+          :Vx="vx"
+          :Vy="vy"
+          :colTemp="colToColored"
+          :matrice="tables"
+        />
+      </div>
+      <div id="step">
+        <table-step-view
+          :Vx="vx"
+          :Vy="vy"
+          :colTemp="colToColored"
+          :matrice="tables"
+          :matP="tablesTreatedStep"
+        />
+        <table-gain-view
+          v-if="gains.length>0"
+          :gains="gains"
+        />
+        <finish-view 
+          v-if="finishedStepping"
+        />
+      </div>
+    </v-container>
+  </v-content>
+  </v-app>
+</template>
+
 <script setup>
   import { onMounted, inject, ref, watch } from 'vue';
   import HeaderView from './views/header.vue';
@@ -7,6 +109,8 @@
   import TableDialogView from './views/exemple-table-dialog.vue';
   import SvgView from './views/svg-show.vue';
   import TableStepView from './views/table-step.vue';
+  import TableGainView from './views/table-gain.vue';
+  import FinishView from './views/finish.vue';
   import {OperationFactory} from '@/services/operation-factory'
 
   const showAction = ref(false);
@@ -15,34 +119,43 @@
   const tableRow = ref(4);
   const { tables, tableLine, tableColumn} = useMatrixInit(tableRow.value,tableCol.value);
 
-  const tablesTreated = ref([[]]) 
+  const tablesTreated = ref([[]])
+  const tablesTreatedStep = ref([[]])
   const tableLineTreated = ref([]);
   const tableColumnTreated = ref([]);
   const tableTreatedDiff = ref([]);
 
   const calculZ=ref(0);
-  const colTemp=ref([]);
+  const colToColored=ref([]);
   const vx=ref([]);
   const vy=ref([]);
+  const colToColoredStepping = ref([]);
 
-  const nbClickOperation = ref([]);
+  const gains = ref([[]]);
+
+  const finishedStepping = ref(false);
+
+  let factory = null;
+  let matrixOps = null;
 
   const handleSave = (tables, table_rows, tables_column) => {
     showAction.value = true;
+    factory = new OperationFactory(tables, table_rows, tables_column);
   }
 
+
   const handleClick = (type, count) => {
-    const factory = new OperationFactory(tables.value, tableLine.value, tableColumn.value,type);
-    const matrixOps = factory.getOperation();
+    factory.setType(type);
+    matrixOps = factory.getOperation();
     matrixOps.process(count);
     (type!='diffmax')?1:tableTreatedDiff.value = matrixOps.matDiff;
     tablesTreated.value = matrixOps.matP;
+    tablesTreatedStep.value = matrixOps.matPCopied;
     tableColumnTreated.value = matrixOps.tabCol;
     tableLineTreated.value = matrixOps.tabLign;
     showAction.value = !matrixOps.finishedBase;
-    colTemp.value = matrixOps.colTemp;
+    colToColored.value = matrixOps.colTemp;
     calculZ.value = matrixOps.Z;
-    nbClickOperation.value = [type,count];
     if(matrixOps.finishedBase) {
       matrixOps.maxMatP();
       vx.value = matrixOps.Vx;
@@ -51,15 +164,16 @@
   }
 
   const handleRefresh = (count) => {
-    const factory = new OperationFactory(tables.value, tableLine.value, tableColumn.value,nbClickOperation.value[0]);
-    const matrixOps = factory.getOperation();
-    matrixOps.process(nbClickOperation.value[1]);
-    matrixOps.maxMatP();
-    colTemp.value = matrixOps.colTemp;
+    matrixOps.processMark(count);
+    tablesTreated.value = matrixOps.matP;
+    tablesTreatedStep.value = matrixOps.matPCopied;
+    colToColoredStepping.value = matrixOps.toColor;
+    gains.value = matrixOps.gains;
+    calculZ.value = matrixOps.Z;
+    colToColored.value = matrixOps.colTemp;
     vx.value = matrixOps.Vx;
     vy.value = matrixOps.Vy;
-    const nbClickRefresh = count - nbClickOperation.value[1];
-    matrixOps.processMark(0);
+    finishedStepping.value = matrixOps.finishedSteppingStone;
   }
 
 
@@ -77,82 +191,3 @@
   const openDialog = ref(false);
 
 </script>
-
-<template>
-
-  <header-view/>
-  <div style="padding:10px;">
-    <table-config-view 
-      :isActions="showAction"
-      @input:col-count-changed="(n) => tableCol = parseInt(n)" 
-      @input:row-count-changed="(n) => tableRow = parseInt(n)"
-      @click:one-step="handleClick"
-      @click:actualised="handleRefresh"
-    />
-    <table-dialog-view 
-      :dialog="openDialog"
-      @exemple-chosen="(item)=>{
-        tables=item.DT;
-        tableLine=item.DTL;
-        tableColumn=item.DTC;
-      }"
-    />
-    <div id="content" class="row" style="display:block">
-      <div id="content1" class="" style="display:inline-block">
-        <table-view 
-          :tables="tables" 
-          :tableColumn="tableColumn" 
-          :tableLine="tableLine" 
-          :action="'yes'"
-          :inputType="'number'"
-          :tableToColor="colTemp"
-          @default-data-option="openDialog=true"
-          @save="handleSave"
-        />
-      </div>
-      <div v-if="tableTreatedDiff.length>2 && showAction" id="content0" class="" style="display:inline-block; margin-left:50px;">
-        <table-view 
-          :tables="tableTreatedDiff" 
-          :tableColumn="tableColumnTreated" 
-          :tableLine="tableLineTreated" 
-          :action="'no'"
-        />
-      </div>	    	
-      <div id="content2" class="" style="display:inline-block; margin-left:50px;">
-        <table-view 
-          :tables="tablesTreated" 
-          :tableColumn="tableColumnTreated" 
-          :tableLine="tableLineTreated" 
-          :action="'no'"
-        />	
-      </div>
-    </div>
-
-    <div id="Z" v-if="calculZ" style="text-align:center; border:1px dashed red">
-      {{ `Z = ${calculZ}` }}
-    </div>
-    <div style="display:block;">
-      <div id="GRP" style="display:inline-block">
-        <svg-view
-          :Vx="vx"
-          :Vy="vy"
-          :colTemp="colTemp"
-          :matrice="tables"
-         />
-      </div>
-      <div id="step" style="display:inline-block; position:absolute; margin-left:50px;">
-        <table-step-view
-          :Vx="vx"
-          :Vy="vy"
-          :colTemp="colTemp"
-          :matrice="tables"
-          :matP="tablesTreated"
-        />
-      </div>
-    </div>
-  </div>
-
-</template>
-
-<style scoped>
-</style>

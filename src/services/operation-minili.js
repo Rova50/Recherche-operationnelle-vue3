@@ -1,5 +1,6 @@
 import { calculZ } from '@/utils/array-sum-calcul-z'
 import { Operation } from './operation';
+import { cloneArray } from '@/utils/clone-array';
 export default class extends Operation {
   constructor(mat, tabLign, tabCol) {
     super(mat, tabLign, tabCol)
@@ -65,6 +66,7 @@ export default class extends Operation {
     }
     if(this.finishedBase){
         this.Z = calculZ(this.matrice,this.matP,this.colTemp);
+        this.matPCopied = cloneArray(this.matP);
     }
   }
 

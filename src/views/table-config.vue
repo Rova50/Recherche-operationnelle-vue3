@@ -1,72 +1,80 @@
 <template>
     <v-container style="text-align: center; margin-top: 10px;">
-      <v-row style="justify-content: center;">
-        <!-- Champs pour les lignes et colonnes -->
-        <v-col cols="2">
-          <v-text-field
-            v-model="ligne"
-            type="number"
-            label="Ligne"
-            outlined
-            dense
-            @input="$emit('input:row-count-changed',ligne)"
-          ></v-text-field>
-        </v-col>
-        <v-col cols="2">
-          <v-text-field
-            v-model="colone"
-            type="number"
-            label="Colonne"
-            outlined
-            dense
-            @input="$emit('input:col-count-changed', colone)"
-          ></v-text-field>
-        </v-col>
-      </v-row>
-  
-      <!-- Boutons d'action -->
-      <v-row v-if="showAction" style="justify-content: center;">
-          <v-btn
-            color="success"
-            style="width: 100px; margin: 10px;"
-            @click="stepPrev"
-            v-if="step>0"
-          >
-            prev
-          </v-btn>
-          <v-btn
-            color="info"
-            style="width: 150px; margin: 10px;"
-            @click="stepMinimumColumn"
-            v-if="showMinico"
-          >
-            MINICO
-          </v-btn>
-          <v-btn
-            color="info"
-            style="width: 150px; margin: 10px;"
-            @click="stepMinimumLine"
-            v-if="showMinili"
-          >
-            MINILI
-          </v-btn>
-          <v-btn
-            color="warning"
-            style="width: 200px; margin: 10px;"
-            @click="stepMaxDifference"
-            v-if="showDiff"
-          >
-            DIFFERENCE MAXIMALE
-          </v-btn>
-      </v-row>
-  
+      <v-card v-if="showAction || step==0">
+        <v-card-text>
+          <v-row v-if="!showAction && step==0" style="justify-content: center;">
+            <!-- Champs pour les lignes et colonnes -->
+            <v-col cols="2">
+              <v-text-field
+                v-model="ligne"
+                type="number"
+                label="Ligne"
+                outlined
+                dense
+                @input="$emit('input:row-count-changed',ligne)"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="2">
+              <v-text-field
+                v-model="colone"
+                type="number"
+                label="Colonne"
+                outlined
+                dense
+                @input="$emit('input:col-count-changed', colone)"
+              ></v-text-field>
+            </v-col>
+          </v-row>
+      
+          <!-- Boutons d'action -->
+          <v-row v-if="showAction" style="justify-content: center;">
+              <v-btn
+                color="success"
+                style="width: 100px; margin: 10px;"
+                @click="stepPrev"
+                v-if="step>0"
+              >
+                prev
+              </v-btn>
+              <v-btn
+                color="info"
+                style="width: 150px; margin: 10px;"
+                @click="stepMinimumColumn"
+                v-if="showMinico"
+              >
+                MINICO
+              </v-btn>
+              <v-btn
+                color="info"
+                style="width: 150px; margin: 10px;"
+                @click="stepMinimumLine"
+                v-if="showMinili"
+              >
+                MINILI
+              </v-btn>
+              <v-btn
+                color="warning"
+                style="width: 200px; margin: 10px;"
+                @click="stepMaxDifference"
+                v-if="showDiff"
+              >
+                DIFFERENCE MAXIMALE
+              </v-btn>
+          </v-row>
+      
+          
+        </v-card-text>
+      </v-card>
       <v-btn
         v-if="!showAction && step>0"
+        fab
         color="error"
-        style="width: 150px; position: fixed; right: 64px; top: 90px;"
-        @click="$emit('click:actualised',step)"
+        style="width: 50px; position: fixed; top: 94px; right: 20px; "
+        @click="$emit('click:actualised',stepRefresh++)"
       >
-        Actualiser
+        <v-icon>
+          mdi-skip-forward
+        </v-icon>
       </v-btn>
     </v-container>
   </template>
@@ -79,6 +87,9 @@
 
   const step = ref(0);
   const stepPrevious = computed(()=>step.value - 1);
+
+  const stepRefresh = ref(0);
+  const stepPreviousRefresh = computed(()=>step.value - 1);
 
   const showMinico = ref(true);
   const showMinili = ref(true);

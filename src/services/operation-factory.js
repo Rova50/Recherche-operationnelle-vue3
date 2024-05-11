@@ -3,11 +3,15 @@ import Minico from '@/services/operation-minico.js';
 import MaxDiff from '@/services/operation-diffmax.js';
 
 export class OperationFactory {
-    constructor(mat, tabLign, tabCol,type){
-        this.type = type;
+    constructor(mat, tabLign, tabCol){
+        this.type = '';
         this.mat = mat || [];
         this.tabLign = tabLign || [];
         this.tabCol = tabCol || [];
+    }
+
+    setType(type){
+        this.type = type;
     }
 
     getOperation()
