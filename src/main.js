@@ -3,7 +3,6 @@ import './assets/main.css'
 import router from './router';
 
 import { createApp } from 'vue'
-import VueConfetti from 'vue-confetti'
 import App from './App.vue'
 
 import '@mdi/font/css/materialdesignicons.css'
@@ -28,5 +27,4 @@ const vuetify = createVuetify({
 const app = createApp(App);
 app.use(vuetify)
 app.use(router);
-app.use(VueConfetti);
 app.mount('#app')
