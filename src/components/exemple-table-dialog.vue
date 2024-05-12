@@ -34,7 +34,7 @@
 </template>
 <script setup>
     import {ref, onMounted, watch} from 'vue';
-    import TableView from '@/views/table.vue';
+    import TableView from '@/components/table.vue';
     import {data} from '@/composables/exemples';
     const props = defineProps({
       dialog:Boolean
