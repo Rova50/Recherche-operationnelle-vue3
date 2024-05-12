@@ -1,15 +1,12 @@
 <template>
-    <v-container>
-        <v-card v-if="gains[0].length>0">
-            <v-card-title class="headline">
-                    Calcul gain en rouge ci-dessus
-            </v-card-title>
-            <v-card-text>
-                
-                <div v-html="tableGain"></div>
-            </v-card-text>
-        </v-card>
-    </v-container>
+    <v-card v-if="gains[0].length>0">
+        <v-card-title class="headline">
+                Calcul gain en rouge ci-dessus
+        </v-card-title>
+        <v-card-text>
+            <div v-html="tableGain"></div>
+        </v-card-text>
+    </v-card>
 </template>
   
 <script setup>
