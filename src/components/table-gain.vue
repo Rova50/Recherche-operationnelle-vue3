@@ -10,7 +10,7 @@
 </template>
   
 <script setup>
-  import { computed } from 'vue';
+  import { ref,watch,onMounted } from 'vue';
   
   // Define props to accept data into the component
   const props = defineProps({
@@ -40,9 +40,10 @@
     }
     return i;
   }
+
+  const tableGain = ref('');
   
-  // Computed property to generate the table content
-  const tableGain = computed(() => {
+  const getGain = () => {
     let tb = '';
     const gainList = props.gains.filter((gain)=> {
                         return gain.length>0
@@ -58,6 +59,17 @@
             tb+=`<input type='text' style='border:0px; width:200px; text-align:left;' value='${element[0]} x ${element[1]} = ${element[0]*element[1]}'>`
         }
     }
-    return tb;
-  });
+    tableGain.value = tb;
+  };
+
+  watch(
+    [() => props.gains],
+    ([newGains]) => {
+        getGain()
+    }
+  );
+
+  onMounted(() => {
+    getGain()
+  })
 </script>

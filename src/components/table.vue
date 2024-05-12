@@ -91,6 +91,9 @@
         </table>
       </div>
     </div>
+    <div style="color: red;" v-if="showError">
+      {{ emptyErrorMessage }}
+    </div>
   </v-container>
 </template>
 
@@ -121,6 +124,9 @@ const lettre = ref([]);
 const showSave = ref(true);
 const showDefaultData = ref(false);
 
+const emptyErrorMessage = 'Input cannot be empty';
+const showError = ref(false);
+
 onMounted(()=>{
 
   tables.value = props.tables;
@@ -147,8 +153,16 @@ watch(
   }
 );
 
-const handleSave = () => {
+const handleSave = async () => {
+  const valid = tables.value.every(row=>row.every(col=>!!col))
+                && tableLine.value.every(row=>!!row)
+                && tableColumn.value.every(col=> !!col);
+  if(!valid) {
+    showError.value = true;
+    return;
+  }
   // Code pour la sauvegarde
+  showError.value = false;
   showSave.value = false;
   emit('save', tables.value, tableLine.value, tableColumn.value);
 };
